@@ -1,0 +1,13 @@
+[project]
+name = "snogue"
+version = "0.1.0"
+authors = ["Caleb Jones"]
+
+[[bin]]
+name = "snogue"
+
+[dependencies.sdl2]
+sdl2 = "~0.0.9"
+
+[dependencies.image]
+image = "~0.2.0"
