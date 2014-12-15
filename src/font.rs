@@ -4,8 +4,8 @@ use std::collections::HashMap;
 use std::rc::{Rc, Weak};
 
 use sdl2::rect::Rect;
-use sdl2::render::{Renderer, Texture, TextureAccess};
-use sdl2::pixels::PixelFormatFlag;
+use sdl2::render::{Renderer, Texture, TextureAccess, BlendMode};
+use sdl2::pixels::{PixelFormatFlag, Color};
 
 use self::image::GenericImage;
 
@@ -18,8 +18,8 @@ pub struct Fonts {
     // characters: &'static str,
     charmap: HashMap<char, Rect>,
     texture: Texture,
-    renderer: Weak<Renderer>
-
+    renderer: Weak<Renderer>,
+    background: Color,
 }
 
 impl Fonts {
@@ -36,17 +36,19 @@ impl Fonts {
         }
 
         // Load the font into our texture
-        let image = image::open(&Path::new("../font-large.png")).unwrap();
+        let image = image::open(&Path::new("../font-large-alpha.png")).unwrap();
         let (tex_width, tex_height) = image.dimensions();
-        let texture = renderer.create_texture(PixelFormatFlag::ARGB8888,
+        let texture = renderer.create_texture(PixelFormatFlag::RGBA8888,
             TextureAccess::Static, tex_width as int, tex_height as int).unwrap();
         let _ = texture.update(None, image.raw_pixels().as_slice(), tex_width as int * 4);
-
+        texture.set_blend_mode(BlendMode::Blend);
+        
         Fonts {
             // characters: charlist,
             charmap: charmap,
             texture: texture,
-            renderer: renderer.downgrade()
+            renderer: renderer.downgrade(),
+            background: Color::RGB(0, 0, 0)
         }
     }
 
@@ -63,10 +65,22 @@ impl Fonts {
         let dest = Rect::new(MARGIN + x * CHAR_WIDTH, MARGIN + y * (CHAR_HEIGHT + LINE_SPACING),
                              CHAR_WIDTH, CHAR_HEIGHT);
         let renderer = self.renderer.upgrade().unwrap();
+        let old_color = renderer.get_draw_color().unwrap();
+        renderer.set_draw_color(self.background);
+        renderer.fill_rect(&dest);
+        renderer.set_draw_color(old_color);
         let result = renderer.copy(&self.texture, Some(source), Some(dest));
         match result {
             Ok(())   => (),
             Err(err) => panic!("Error copying font texture from {} to {}: {}", source, dest, err)
         }
+    }
+
+    pub fn set_foreground_color(&self, r: u8, g: u8, b: u8) {
+        self.texture.set_color_mod(r, g, b);
+    }
+
+    pub fn set_background_color(&mut self, r: u8, g: u8, b: u8) {
+        self.background = Color::RGB(r, g, b);
     }
 }

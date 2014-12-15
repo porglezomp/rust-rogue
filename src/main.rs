@@ -31,8 +31,9 @@ fn main() {
         sdl2::render::RendererFlags::empty()).unwrap();
     let renderer = Rc::new(renderer);
 
-    let fonts = Fonts::new(renderer.clone());
-
+    let mut fonts = Fonts::new(renderer.clone());
+    fonts.set_background_color(23, 54, 89);
+    fonts.set_foreground_color(255, 128, 196);
 
     let mut message = String::new();
     loop {
