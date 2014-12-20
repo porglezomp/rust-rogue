@@ -1,3 +1,5 @@
+#![allow(unused_must_use)]
+
 extern crate sdl2;
 
 use std::rc::Rc;
@@ -10,7 +12,7 @@ use sdl2::render::Renderer;
 use font::Fonts;
 use font::{MARGIN, CHAR_WIDTH, CHAR_HEIGHT, LINE_SPACING};
 
-use renderable::{Panel, Renderable};
+use renderable::{Panel, Renderable, Label, Progress};
 
 mod font;
 mod renderable;
@@ -32,24 +34,29 @@ fn main() {
     let renderer = Renderer::from_window(window,
         sdl2::render::RenderDriverIndex::Auto,
         sdl2::render::RendererFlags::empty()).unwrap();
-    let renderer = Rc::new(renderer);
+    let renderer = Rc::new(renderer);st
 
     let mut fonts = Fonts::new(renderer.clone());
     fonts.set_background_color(23, 54, 89);
     fonts.set_foreground_color(255, 128, 196);
 
-    let mut message = String::new();
+    // Initialize the test scene
     let mut panel = Panel::new(sdl2::rect::Rect::new(0, 0, 32, 10), true);
-    let child = Panel::new(sdl2::rect::Rect::new(9, 3, 9, 4), true);
-    panel.add_child(Rc::new(child));
+    let mut child = Panel::new(sdl2::rect::Rect::new(9, 3, 9, 4), true);
+    let mut progress = Progress::new(sdl2::rect::Point::new(1, 1), 8);
+    progress.value = 5;
+    child.add_child(box progress);
+    panel.add_child(box child);
     let child = Panel::new(sdl2::rect::Rect::new(3, 2, 10, 4), true);
-    panel.add_child(Rc::new(child));
+    panel.add_child(box child);
     let child = Panel::new(sdl2::rect::Rect::new(15, 4, 8, 5), true);
-    panel.add_child(Rc::new(child));
+    panel.add_child(box child);
+    let child = Label::new(sdl2::rect::Point::new(1, 1), "Hello!");
+    panel.add_child(box child);
 
     loop {
         renderer.clear();
-        let should_quit = events(&fonts, &mut message);
+        let should_quit = events();
         if should_quit { break; }
         for y in range(0, NUM_CHARS_Y) {
             for x in range(0, NUM_CHARS_X) {
@@ -65,18 +72,12 @@ fn main() {
     sdl2::quit()
 }
 
-fn events(fonts: &Fonts, message: &mut String) -> bool {
+fn events() -> bool {
     loop {
         match poll_event() {
             Event::None => return false,
             Event::Quit(_) => return true,
-            Event::KeyDown(_, _, sdl2::keycode::KeyCode::Backspace, _, _, _) => {
-                // message.pop();
-            }
-            Event::TextInput(_, _, text) => {
-                // message.push(text.char_at(0));
-            }
-            event => (),
+            _ => (),
         }
     }
 }

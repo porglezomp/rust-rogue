@@ -43,7 +43,7 @@ impl Fonts {
         let texture = renderer.create_texture(PixelFormatFlag::RGBA8888,
             TextureAccess::Static, tex_width as int, tex_height as int).unwrap();
         let _ = texture.update(None, image.raw_pixels().as_slice(), tex_width as int * 4);
-        texture.set_blend_mode(BlendMode::Blend);
+        let _ = texture.set_blend_mode(BlendMode::Blend);
         
         Fonts {
             charmap: charmap,
